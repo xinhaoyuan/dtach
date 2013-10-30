@@ -47,7 +47,7 @@ restore_term(void)
 
 /* Connects to a unix domain socket */
 static int
-connect_socket(char *name)
+connect_socket(char *name, char ctype)
 {
 	int s;
 	struct sockaddr_un sockun;
@@ -74,7 +74,30 @@ connect_socket(char *name)
 		}
 		return -1;
 	}
+    write(s, &ctype, 1);
 	return s;
+}
+
+/* get the pid of the process and exit */
+int
+attach_get_pid(void)
+{
+    int s = connect_socket(sockname, CLIENT_TYPE_QUERY_PID);
+    if (s < 0) return s;
+    
+    pid_t pid;
+    char *cur = (char *)&pid;
+    char *end = cur + sizeof(pid);
+    while (cur != end) {
+        int n = read(s, cur, end - cur);
+        if (n < 0) {
+            close(s);
+            return n;
+        } else cur += n;
+    }
+
+    printf("%d\n", pid);    
+    return 0;
 }
 
 /* Signal */
@@ -149,7 +172,7 @@ attach_main(int noerror)
 
 	/* Attempt to open the socket. Don't display an error if noerror is 
 	** set. */
-	s = connect_socket(sockname);
+	s = connect_socket(sockname, CLIENT_TYPE_NORMAL);
 	if (s < 0)
 	{
 		if (!noerror)

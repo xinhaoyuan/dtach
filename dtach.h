@@ -95,6 +95,14 @@ enum
 	MSG_REDRAW	= 4,
 };
 
+/* modified by xinhaoyuan@gmail.com {{{ */
+enum
+{
+    CLIENT_TYPE_NORMAL    = 0,
+    CLIENT_TYPE_QUERY_PID = 1,
+};
+/* }}} */
+
 enum
 {
 	REDRAW_UNSPEC	= 0,
@@ -129,6 +137,7 @@ struct packet
 /* This hopefully moves to the bottom of the screen */
 #define EOS "\033[999H"
 
+int attach_get_pid(void);
 int attach_main(int noerror);
 int master_main(char **argv, int waitattach);
 

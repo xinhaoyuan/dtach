@@ -375,7 +375,22 @@ control_activity(int s)
 	fd = accept(s, NULL, NULL);
 	if (fd < 0)
 		return;
-	else if (setnonblocking(fd) < 0)
+    /* modified by xinhaoyuan@gmail.com {{{ */
+    char ctype;
+    read(fd, &ctype, 1);
+    if (ctype == CLIENT_TYPE_QUERY_PID) {
+        /* no byte order consideration */
+        char *end, *cur;
+        cur = (char *)&the_pty.pid; end = cur + sizeof(pid_t);
+        while (cur < end) {
+            int n = write(fd, cur, end - cur);
+            cur += n;
+        }
+        close(fd);
+        return;
+    }
+    /* }}} */
+	if (setnonblocking(fd) < 0)
 	{
 		close(fd);
 		return;

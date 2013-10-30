@@ -62,6 +62,7 @@ usage()
 		"  -c\t\tCreate a new socket and run the specified command.\n"
 		"  -n\t\tCreate a new socket and run the specified command "
 		"detached.\n"
+        "  -q\t\tQuery the pid of the specified socket.\n"
 		"Options:\n"
 		"  -e <char>\tSet the detach character to <char>, defaults "
 		"to ^\\.\n"
@@ -102,7 +103,7 @@ main(int argc, char **argv)
 		if (mode == '?')
 			usage();
 		else if (mode != 'a' && mode != 'c' && mode != 'n' &&
-			 mode != 'A')
+			 mode != 'A' && mode != 'q')
 		{
 			printf("%s: Invalid mode '-%c'\n", progname, mode);
 			printf("Try '%s --help' for more information.\n",
@@ -200,7 +201,7 @@ main(int argc, char **argv)
 		++argv; --argc;
 	}
 
-	if (mode != 'a' && argc < 1)
+	if (mode != 'a' && mode != 'q' && argc < 1)
 	{
 		printf("%s: No command was specified.\n", progname);
 		printf("Try '%s --help' for more information.\n",
@@ -258,5 +259,9 @@ main(int argc, char **argv)
 			return attach_main(0);
 		}
 	}
+    else if (mode == 'q') {
+        return attach_get_pid();
+    }
+    
 	return 0;
 }
