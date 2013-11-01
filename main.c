@@ -55,6 +55,7 @@ usage()
 		"       dtach -A <socket> <options> <command...>\n"
 		"       dtach -c <socket> <options> <command...>\n"
 		"       dtach -n <socket> <options> <command...>\n"
+		"       dtach -q <socket> <options>\n"
 		"Modes:\n"
 		"  -a\t\tAttach to the specified socket.\n"
 		"  -A\t\tAttach to the specified socket, or create it if it\n"
