@@ -43,6 +43,8 @@ struct client
 	struct client *next;
 	/* The previous client in the linked list. */
 	struct client **pprev;
+    /* the window size of the client */
+    struct winsize ws;
 	/* File descriptor of the client. */
 	int fd;
 	/* Whether or not the client is attached. */
@@ -409,6 +411,26 @@ control_activity(int s)
         send_scrollback( p );
 }
 
+/* set the pty window size to the minimum size of all clients */
+static void
+update_pty_window_size() {
+    struct client *p, *next;
+    int col = -1, row = -1;
+    for (p = clients; p; p = next)
+    {
+        next = p->next;
+        if (row == -1 || p->ws.ws_row < row)
+            row = p->ws.ws_row;
+        if (col == -1 || p->ws.ws_col < col)
+            col = p->ws.ws_col;
+    }
+    if (row != -1)
+        the_pty.ws.ws_row = row;
+    if (col != -1)
+        the_pty.ws.ws_col = col;
+    ioctl(the_pty.fd, TIOCSWINSZ, &the_pty.ws);
+}
+
 /* Process activity from a client. */
 static void
 client_activity(struct client *p)
@@ -445,8 +467,8 @@ client_activity(struct client *p)
 	/* Window size change request, without a forced redraw. */
 	else if (pkt.type == MSG_WINCH)
 	{
-		the_pty.ws = pkt.u.ws;
-		ioctl(the_pty.fd, TIOCSWINSZ, &the_pty.ws);
+        p->ws = pkt.u.ws;
+        update_pty_window_size();
 	}
 
 	/* Force a redraw using a particular method. */
@@ -462,8 +484,8 @@ client_activity(struct client *p)
 			return;
 
 		/* Set the window size. */
-		the_pty.ws = pkt.u.ws;
-		ioctl(the_pty.fd, TIOCSWINSZ, &the_pty.ws);
+        p->ws = pkt.u.ws;
+        update_pty_window_size();
 
 		/* Send a ^L character if the terminal is in no-echo and
 		** character-at-a-time mode. */
